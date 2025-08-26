@@ -2,7 +2,7 @@
 
 ## 1. Identificação
 
-- *Projeto:* Sistema de Gestão das Provas do ENADE
+- *Projeto:* 
 - *Tipo de documento:* Documento de Requisitos de Dados (DRD)
 - *Instituição responsável:* Instituto de Informática – UFG
 - *Autor:* Higor Ferreira & Matheus Marinho
