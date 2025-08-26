@@ -1,0 +1,166 @@
+// schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String @id @default(uuid())
+  nome      String
+  email     String @unique
+  papel     String // admin, analista, operador
+  senhaHash String
+
+  attackRuns AttackRun[]
+}
+
+model Asset {
+  id          String  @id @default(uuid())
+  nome        String
+  tipo        String // PLC, RTU, HMI, etc.
+  fabricante  String?
+  modelo      String?
+  ip          String?
+  zona        String? // Field, Control, DMZ
+  criticidade Int?
+
+  events     OT_Event[]
+  sightings  Sighting[]
+  attackRuns AttackRun[]
+}
+
+model Indicator {
+  id             String    @id @default(uuid())
+  tipo           String // ip, hash, yara, sigma...
+  pattern        String
+  severidade     Int?
+  fonte          String?
+  validadeInicio DateTime?
+  validadeFim    DateTime?
+
+  sightings Sighting[]
+  threats   IndicatorThreat[]
+}
+
+model ThreatEntity {
+  id        String  @id @default(uuid())
+  tipo      String // campaign, malware, tool, intrusion-set
+  nome      String
+  descricao String?
+
+  indicators IndicatorThreat[]
+}
+
+model IndicatorThreat {
+  id          String       @id @default(uuid())
+  indicator   Indicator    @relation(fields: [indicatorId], references: [id])
+  indicatorId String
+  threat      ThreatEntity @relation(fields: [threatId], references: [id])
+  threatId    String
+}
+
+model OT_Event {
+  id        String   @id @default(uuid())
+  ts        DateTime
+  protocolo String
+  srcIp     String?
+  dstIp     String?
+  funcao    String?
+  valor     String?
+  anomalia  Boolean?
+
+  asset   Asset  @relation(fields: [assetId], references: [id])
+  assetId String
+}
+
+model Sighting {
+  id    String   @id @default(uuid())
+  ts    DateTime
+  count Int      @default(1)
+
+  indicator   Indicator @relation(fields: [indicatorId], references: [id])
+  indicatorId String
+
+  asset   Asset  @relation(fields: [assetId], references: [id])
+  assetId String
+}
+
+model Case {
+  id          String   @id @default(uuid())
+  titulo      String
+  status      String
+  responsavel String?
+  criadoEm    DateTime @default(now())
+
+  evidencias Evidence[]
+}
+
+model Evidence {
+  id         String   @id @default(uuid())
+  tipo       String
+  caminho    String
+  hashSha256 String
+  coletadoEm DateTime @default(now())
+  tamanho    Int?
+
+  case   Case   @relation(fields: [caseId], references: [id])
+  caseId String
+
+  custodies Custody[]
+}
+
+model Custody {
+  id         String   @id @default(uuid())
+  acao       String
+  ator       String
+  local      String?
+  ts         DateTime
+  assinatura String?
+
+  evidence   Evidence @relation(fields: [evidenceId], references: [id])
+  evidenceId String
+}
+
+model AttackScenario {
+  id           String  @id @default(uuid())
+  nome         String
+  descricao    String?
+  protocolo    String?
+  tecnicaMITRE String?
+
+  runs AttackRun[]
+}
+
+model AttackRun {
+  id       String    @id @default(uuid())
+  tsInicio DateTime
+  tsFim    DateTime?
+  status   String?
+
+  scenario   AttackScenario @relation(fields: [scenarioId], references: [id])
+  scenarioId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  asset   Asset  @relation(fields: [assetId], references: [id])
+  assetId String
+
+  results AttackResult[]
+}
+
+model AttackResult {
+  id          String  @id @default(uuid())
+  sucesso     Boolean
+  impacto     String?
+  logs        String?
+  iocsGerados String?
+
+  run   AttackRun @relation(fields: [runId], references: [id])
+  runId String
+}
