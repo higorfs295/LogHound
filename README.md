@@ -35,46 +35,47 @@ O sistema utiliza o **modelo relacional** como paradigma de modelagem de dados, 
 
 ## ✨ Características Principais
 
-### 🔐 Gerenciamento de Ativos e Componentes
+### 🔐 Gerenciamento de Ativos
 
 - **Cadastro completo de ativos** com identificador único
-- Suporte para diferentes tipos de ativos (PLC, RTU, HMI, aplicações, etc.)
-- Rastreamento de hierarquia de ativos (composição de sistemas)
-- Registro de vulnerabilidades por ativo
-- Classificação por criticidade e zona de rede (Field, Control, DMZ)
+- Suporte para diferentes tipos de ativos (dispositivos físicos ou aplicações)
+- Atributos essenciais: nome e tipo para classificação
+- Rastreamento de ativos afetados por incidentes de segurança
 
-### 📊 Registro e Análise de Eventos de Segurança
+### 📊 Registro e Gestão de Incidentes
 
-- **Registro de eventos OT** com timestamp obrigatório
-- Captura de protocolos industriais (Modbus, DNP3, IEC 61850, etc.)
-- Detecção de anomalias em comunicações
-- Associação de eventos a ativos específicos
+- **Registro de incidentes de segurança** com data/hora obrigatória
+- Controle de status dos incidentes (aberto, fechado, em análise, etc.)
+- Associação de incidentes a usuários responsáveis pelo registro/tratamento
+- Rastreamento temporal completo de eventos
 
-### 🎯 Gestão de Indicadores e Ameaças
+### 🎯 Gestão de Ameaças
 
-- **Cadastro de indicadores de segurança** (IP, hash, YARA, Sigma, etc.)
-- Associação de indicadores a ameaças conhecidas
-- Rastreamento de avistamentos (sightings) de indicadores
-- Validação temporal de indicadores
+- **Cadastro de tipos de ameaças** (malware, negação de serviço, etc.)
+- Associação de ameaças a incidentes através do relacionamento ternário OCORRÊNCIA
+- Modelagem da relação complexa entre incidente, ativo e ameaça
+- Suporte para múltiplas ameaças por incidente e múltiplos ativos afetados
 
-### 🚨 Gestão de Casos e Evidências
+### 🚨 Gestão de Evidências
 
-- **Registro de casos de segurança** com status e responsáveis
-- Cadeia de custódia (chain of custody) para evidências
-- Armazenamento de evidências com hash SHA-256
-- Rastreamento completo de ações sobre evidências
-
-### 🎭 Modelagem de Cenários de Ataque
-
-- **Criação de cenários de ataque** com técnicas MITRE ATT&CK
-- Execução de cenários (attack runs) com rastreamento de resultados
-- Associação de cenários a ativos e usuários
-- Geração de IOCs a partir de execuções
+- **Registro de evidências** vinculadas a incidentes específicos
+- Armazenamento de arquivos/logs como evidências
+- Descrição detalhada de cada evidência
+- **Entidade fraca:** Evidências dependem de incidentes para existir
+- Exclusão em cascata: remoção de incidente remove suas evidências
 
 ### 👥 Gestão de Usuários
 
-- Sistema de usuários com diferentes papéis (admin, analista, operador)
-- Rastreamento de execuções de cenários por usuário
+- Sistema de usuários com identificação única
+- Rastreamento de usuários responsáveis por incidentes
+- Informações básicas: nome e e-mail
+- Relacionamento 1:N com incidentes (um usuário pode registrar vários incidentes)
+
+### 🔗 Modelagem de Relacionamentos Complexos
+
+- **Relacionamento ternário OCORRÊNCIA:** Modela a ocorrência de um incidente relacionando simultaneamente incidente, ativo(s) e ameaça(s)
+- **Relacionamento identificador POSSUI:** Garante que evidências sempre estejam vinculadas a um incidente
+- Integridade referencial garantida em todos os relacionamentos
 
 ## 🏗️ Arquitetura e Modelo de Dados
 
