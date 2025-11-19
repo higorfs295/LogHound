@@ -78,41 +78,65 @@ O sistema utiliza o **modelo relacional** como paradigma de modelagem de dados, 
 
 ## 🏗️ Arquitetura e Modelo de Dados
 
-O LogHound utiliza um modelo relacional baseado em PostgreSQL, modelado através do Prisma ORM. O sistema é composto pelas seguintes entidades principais:
+O LogHound utiliza o **modelo relacional** como paradigma de modelagem de dados, oferecendo simplicidade conceitual, base matemática sólida e flexibilidade para realização de consultas complexas. O sistema é modelado através do Prisma ORM e implementado em PostgreSQL.
 
-### Entidades Principais
+### Modelo Entidade-Relacionamento (MER)
 
-| Entidade | Descrição |
-|----------|-----------|
-| **Asset** | Ativos industriais (dispositivos, aplicações) |
-| **OT_Event** | Eventos de segurança capturados em tempo real |
-| **Indicator** | Indicadores de comprometimento (IOCs) |
-| **ThreatEntity** | Entidades de ameaça (malware, campanhas, ferramentas) |
-| **Sighting** | Avistamentos de indicadores em ativos |
-| **Case** | Casos de segurança abertos para investigação |
-| **Evidence** | Evidências forenses coletadas |
-| **Custody** | Registros da cadeia de custódia |
-| **AttackScenario** | Cenários de ataque modelados |
-| **AttackRun** | Execuções de cenários de ataque |
-| **AttackResult** | Resultados das execuções |
-| **User** | Usuários do sistema |
+O modelo conceitual do LogHound é composto pelas seguintes entidades:
 
-### Relacionamentos Principais
+#### Entidades Fortes
+
+| Entidade | Atributos | Descrição |
+|----------|-----------|-----------|
+| **USUÁRIO** | `ID_Usuario` (PK), `Nome`, `E-mail` | Usuários do sistema que registram e tratam incidentes |
+| **INCIDENTE** | `ID_Incidente` (PK), `Data/Hora`, `Status` | Eventos de segurança registrados no sistema |
+| **ATIVO** | `ID_Ativo` (PK), `Nome`, `Tipo` | Ativos do sistema (dispositivos ou aplicações) |
+| **AMEAÇA** | `ID_Ameaça` (PK), `Nome` | Tipos de ameaças de segurança (malware, negação de serviço, etc.) |
+
+#### Entidade Fraca
+
+| Entidade | Atributos | Descrição |
+|----------|-----------|-----------|
+| **EVIDÊNCIA** | `ID_Evidência` (PK parcial), `Arquivo/Log`, `Descrição` | Evidências coletadas que comprovam um incidente |
+
+### Relacionamentos
+
+#### 1. REGISTRA (Usuário → Incidente)
+- **Cardinalidade:** 1:N (Um usuário pode registrar vários incidentes)
+- **Descrição:** Relaciona o usuário responsável pelo registro/tratamento do incidente
+
+#### 2. OCORRÊNCIA (Relacionamento Ternário)
+- **Entidades:** INCIDENTE, ATIVO, AMEAÇA
+- **Cardinalidades:**
+  - INCIDENTE (1) : Um incidente está relacionado a uma ocorrência específica
+  - ATIVO (N) : Um incidente pode afetar múltiplos ativos
+  - AMEAÇA (N) : Um incidente pode estar relacionado a múltiplas ameaças
+- **Descrição:** Modela a ocorrência de um incidente de segurança, relacionando qual ameaça afetou quais ativos
+
+#### 3. POSSUI (Relacionamento Identificador - Incidente → Evidência)
+- **Cardinalidade:** 1:N (Um incidente pode possuir várias evidências)
+- **Tipo:** Relacionamento identificador (EVIDÊNCIA é entidade fraca)
+- **Descrição:** Relaciona evidências coletadas a um incidente específico. A exclusão de um incidente implica na exclusão de todas as suas evidências.
+
+### Diagrama de Relacionamentos
 
 ```
-Asset ──┬──> OT_Event (1:N)
-        ├──> Sighting (1:N)
-        └──> AttackRun (1:N)
-
-Indicator ──┬──> Sighting (1:N)
-            └──> IndicatorThreat (N:M) ──> ThreatEntity
-
-Case ──> Evidence (1:N) ──> Custody (1:N)
-
-AttackScenario ──> AttackRun (1:N) ──> AttackResult (1:N)
-                                    └──> User (N:1)
-                                    └──> Asset (N:1)
+USUÁRIO (1) ──[REGISTRA]──> (N) INCIDENTE (1) ──[POSSUI]──> (N) EVIDÊNCIA
+                                 │
+                                 │
+                    [OCORRÊNCIA] │
+                                 │
+                    ┌────────────┴────────────┐
+                    │                         │
+              (N) ATIVO                  (N) AMEAÇA
 ```
+
+### Características do Modelo
+
+- **Simplicidade Conceitual:** Modelo focado nas entidades essenciais do domínio
+- **Integridade Referencial:** Garante que incidentes só existam com ativos e ameaças válidos
+- **Entidade Fraca:** EVIDÊNCIA depende de INCIDENTE para existir
+- **Relacionamento Ternário:** OCORRÊNCIA modela a complexidade de relacionar incidente, ativo e ameaça simultaneamente
 
 ## 🛠️ Tecnologias Utilizadas
 
